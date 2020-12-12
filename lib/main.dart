@@ -2,9 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:movies/src/Models/Movie.dart';
 import 'package:http/http.dart';
-import 'package:movies/src/Validators/TextInputValidator.dart';
 
 void main() {
   runApp(const MyApp());
@@ -413,5 +411,84 @@ class _HomePageState extends State<HomePage> {
         ],
       ),
     );
+  }
+}
+
+class Movie {
+  Movie({this.title, this.year, this.genres, this.rating, this.coverImageUrl});
+
+  Movie.fromJson(dynamic item)
+      : title = item['title'],
+        year = item['year'],
+        genres = List<String>.from(item['genres']),
+        rating = item['rating'].toDouble(),
+        coverImageUrl = item['medium_cover_image'];
+
+  final String title;
+  final int year;
+  final List<String> genres;
+  final double rating;
+  final String coverImageUrl;
+
+  @override
+  String toString() {
+    return 'Movie{title: $title, year: $year, genres: $genres}';
+  }
+}
+
+class TextInputValidator {
+  final RegExp _decimalNumberPattern = RegExp(r'^[0-9]+(.[0-9][0-9]?)?$');
+  final RegExp _yearPattern = RegExp(r'^[1-9][0-9][0-9][0-9]$');
+
+  bool isValidRating(String rating) {
+    if (rating == null ||
+        rating.isEmpty ||
+        rating.contains(',') ||
+        double.tryParse(rating) == null ||
+        double.tryParse(rating) > 10) {
+      return false;
+    }
+
+    return _decimalNumberPattern.hasMatch(rating);
+  }
+
+  String setRatingErrorMessage(String rating) {
+    if (rating == null || rating.isEmpty) {
+      return 'This filed could not be empty';
+    }
+
+    if (!_decimalNumberPattern.hasMatch(rating) || rating.contains(',') || double.tryParse(rating) == null) {
+      return 'Rating must be a valid decimal number';
+    }
+
+    if (double.tryParse(rating) > 10) {
+      return 'Rating must be a number between 0 and 10';
+    }
+
+    return null;
+  }
+
+  bool isValidYear(String year) {
+    if (year == null || year.isEmpty || int.tryParse(year) == null || int.tryParse(year) > 2020) {
+      return false;
+    }
+
+    return _yearPattern.hasMatch(year);
+  }
+
+  String setYearErrorMessage(String year) {
+    if (year == null || year.isEmpty) {
+      return 'This field could not be empty';
+    }
+
+    if (_yearPattern.hasMatch(year) && int.tryParse(year) > 2020) {
+      return 'Year must be lower or equal to current year';
+    }
+
+    if (!_yearPattern.hasMatch(year)) {
+      return 'Year must be an integer number with 4 digits';
+    }
+
+    return null;
   }
 }
